@@ -44,33 +44,6 @@ $j(function(){
         return $j("#frame-content");
     }
 
-    let frameDataCSS = () => {
-        return {
-            "position":"absolute",
-            "width":frameSize+"px",
-            "height":frameSize+"px",
-            "top": MouseY(event.pageY) - (frameSize/2) + "px",
-            "left": MouseX(event.pageX) - (frameSize/2) + "px",
-            "background":"white",
-            "border":"1px solid black",
-            "overflow":"hidden",
-            "pointer-events":"none",
-            "z-index":"999998"
-        }
-    }
-
-    let frameContentCSS = () => {
-        return {
-            "transform":"scale(2,2)",
-            "transform-origin":"0 0",
-            "position":"absolute",
-            "width":tracker.width() * scale + "px",
-            "height":tracker.height() * scale + "px",
-            "cursor":"default",
-            "pointer-events":"none"
-        }
-    }
-
     function assignFrame() {
         mag.before(createFrame);
         return $j("#frame");
