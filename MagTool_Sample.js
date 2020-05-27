@@ -379,6 +379,7 @@ if (document.querySelector("#mag-controls") == null) {
 
 let button = document.createElement("button");
     button.innerText = "Start MagTool";
+    button.setAttribute("style","position: absolute; z-index: 999999;");
     button.addEventListener("click", MagTool);
 
 document.querySelector(bind).insertBefore(button, document.querySelector(bind).firstChild);
