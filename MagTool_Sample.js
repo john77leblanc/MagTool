@@ -9,7 +9,7 @@ if (document.querySelector("#mag-controls") == null) {
   // Generate HTML
 
   const MagControls = () => {
-    this.preso = () => document.querySelector("bind");
+    this.preso = () => document.querySelector(bind);
 
     this.mouseData = {
       x: 0,
