@@ -1,11 +1,7 @@
 // MagTool 360
 // By Johnathan LeBlanc
 
-console.log("MagTool opened");
-
 if (document.querySelector("#mag-controls") == null) {
-  // Generate HTML
-
   const MagControls = () => {
     this.preso = () => document.querySelector("#preso");
 
@@ -27,6 +23,13 @@ if (document.querySelector("#mag-controls") == null) {
       dragging: false,
       dimension: () => this.data.frameSize / 2
     });
+
+    this.selectors = {
+      id:     "m-id",
+      class:  "m-class",
+      click:  "m-click",
+      event:  "m-event"
+    };
 
     this.controlSelectors = ({
       selector:           () => document.querySelector("#mag-controls"),
@@ -54,26 +57,33 @@ if (document.querySelector("#mag-controls") == null) {
         el.innerHTML = `
           <div id="controls">
             <div m-class="mag-controls">
-              <div m-class="mag-data">
-                <span m-class="mag-data-static">MagTool: </span>
+              <div m-class="mag-data title">
+                <span m-class="mag-data-static">MagTool</span>
               </div>
-              <button id="mag-toggle" m-class="mag-button full" m-hover>ON</button>
+              <div></div>
+              <button id="mag-close" m-class="mag-button" m-hover m-event="click,magClose">&times;</button>
+            </div>
+            <div m-class="mag-controls">
+              <div m-class="mag-data">
+                <span m-class="mag-data-static">Toggle: </span>
+              </div>
+              <button id="mag-toggle" m-class="mag-button full" m-hover m-event="click,toggleFrame">ON</button>
             </div>
             <div m-class="mag-controls">
               <div m-class="mag-data">
                 <span m-class="mag-data-static">Magnification: </span>
                 <span id="size" m-class="mag-data-text"></span>
               </div>
-              <button id="mag-up"   m-class="mag-button" m-hover>+</button>
-              <button id="mag-down" m-class="mag-button" m-hover>-</button>
+              <button id="mag-up"   m-class="mag-button" m-hover m-event="click,magnificationUp">+</button>
+              <button id="mag-down" m-class="mag-button" m-hover m-event="click,magnificationDown">-</button>
             </div>
             <div m-class="mag-controls">
               <div m-class="mag-data">
                 <span m-class="mag-data-static">Frame Size: </span>
                 <span id="mag-frame-size" m-class="mag-data-text"></span>
               </div>
-              <button id="mag-frame-up"   m-class="mag-button" m-hover>+</button>
-              <button id="mag-frame-down" m-class="mag-button" m-hover>-</button>
+              <button id="mag-frame-up"   m-class="mag-button" m-hover m-event="click,frameSizeUp">+</button>
+              <button id="mag-frame-down" m-class="mag-button" m-hover m-event="click,frameSizeDown">-</button>
             </div>
           </div>`;
 
@@ -89,16 +99,19 @@ if (document.querySelector("#mag-controls") == null) {
     }
 
     this.css = ({
+      "title": {
+        "font-size": "16px"
+      },
       "control-panel": {
         "font-family": "'Open Sans' sans-serif",
-        "position":"absolute",
-        "background":"#ffffff",
-        "padding":"5px",
+        "position": "absolute",
+        "background": "#ffffff",
+        "padding": "5px",
         "top": 0 + "px",
         "left": this.preso().offsetWidth - this.data.frameSize + "px",
-        "border-radius":"3px",
-        "box-shadow":"0 0 5px #999999",
-        "z-index":"999999",
+        "border-radius": "3px",
+        "box-shadow": "0 0 5px #999999",
+        "z-index": "999999",
       },
       "mag-data": {
 
@@ -127,7 +140,7 @@ if (document.querySelector("#mag-controls") == null) {
       "full": {
         "grid-column": "span 2"
       },
-      frameCSS: {
+      "frameCSS": {
         "position":       "absolute",
         "width":          `${this.data.frameSize}px`,
         "height":         `${this.data.frameSize}px`,
@@ -139,7 +152,7 @@ if (document.querySelector("#mag-controls") == null) {
         "pointer-events": "none",
         "z-index":        "999998"
       },
-      frameContentCSS: {
+      "frameContentCSS": {
         "transform":        `scale(${this.data.magnification}, ${this.data.magnification})`,
         "transform-origin": "0 0",
         "position":         "absolute",
@@ -159,7 +172,48 @@ if (document.querySelector("#mag-controls") == null) {
       }
     });
 
+    // MagTool control panel functions
+    this.magMethods = ({
+      magClose: () => {
+        this.methods.destroy();
+      },
+      toggleFrame: () => {
+        this.data.open = !this.data.open;
+        console.log("Mag Open: ", this.data.open);
+
+        if (this.data.open == true) {
+          this.controlSelectors.buttons.toggle().innerHTML = "ON";
+          this.frameSelectors.frame().style.display = "block";
+          this.privateMethods.setRefresh();
+        } else {
+          this.controlSelectors.buttons.toggle().innerHTML = "OFF";
+          this.frameSelectors.frame().style.display = "none";
+          this.privateMethods.clearRefresh();
+        }
+      },
+      magnificationUp: () => {
+        if (this.data.magnification < this.data.maxMagnification) this.data.magnification += 0.5;
+        this.privateMethods.adjustMagnification();
+      },
+      magnificationDown: () => {
+        if (this.data.magnification > this.data.minMagnification) this.data.magnification -= 0.5;
+        this.privateMethods.adjustMagnification();
+      },
+      frameSizeUp: () => {
+        if (this.data.frameSize < this.data.maxFrameSize) this.data.frameSize += 50;
+        this.privateMethods.adjustFrameSize();
+      },
+      frameSizeDown: () => {
+        if (this.data.frameSize > this.data.minFrameSize) this.data.frameSize -= 50;
+        this.privateMethods.adjustFrameSize();
+      },
+    });
+
     this.privateMethods = ({
+      mouseMove: () => {
+        this.privateMethods.checkDragging();
+        this.privateMethods.positionFrame();
+      },
       updateMouseData: () => {
         this.mouseData.x = event.pageX;
         this.mouseData.y = event.pageY;
@@ -187,31 +241,11 @@ if (document.querySelector("#mag-controls") == null) {
           element.style[key] = css[key];
         }
       },
-      toggleFrame: () => {
-        this.data.open = !this.data.open;
-        console.log("Mag Open: ", this.data.open);
-
-        if (this.data.open == true) {
-          this.controlSelectors.buttons.toggle().innerHTML = "ON";
-          this.frameSelectors.frame().style.display = "block";
-          this.privateMethods.setRefresh();
-        } else {
-          this.controlSelectors.buttons.toggle().innerHTML = "OFF";
-          this.frameSelectors.frame().style.display = "none";
-          this.privateMethods.clearRefresh();
-        }
-      },
-      magnificationUp: () => {
-        if (this.data.magnification < this.data.maxMagnification) this.data.magnification += 0.5;
-        this.privateMethods.adjustMagnification();
-      },
-      magnificationDown: () => {
-        if (this.data.magnification > this.data.minMagnification) this.data.magnification -= 0.5;
-        this.privateMethods.adjustMagnification();
-      },
-      adjustMagnification: () => {
-        this.controlSelectors.magnificationText().innerHTML = `${this.data.magnification * 100}%`;
-        this.privateMethods.positionFrame();
+      assignMethods: () => {
+        document.querySelectorAll(`[${this.selectors.event}]`).forEach(element => {
+          let event = element.getAttribute(this.selectors.event).split(",");
+          element.addEventListener(event[0].trim(), this.magMethods[event[1].trim()]);
+        });
       },
       applyFrameSizeCSS: () => {
         let frameCSS = {
@@ -225,13 +259,9 @@ if (document.querySelector("#mag-controls") == null) {
           frameCSS
         );
       },
-      frameSizeUp: () => {
-        if (this.data.frameSize < this.data.maxFrameSize) this.data.frameSize += 50;
-        this.privateMethods.adjustFrameSize();
-      },
-      frameSizeDown: () => {
-        if (this.data.frameSize > this.data.minFrameSize) this.data.frameSize -= 50;
-        this.privateMethods.adjustFrameSize();
+      adjustMagnification: () => {
+        this.controlSelectors.magnificationText().innerHTML = `${this.data.magnification * 100}%`;
+        this.privateMethods.positionFrame();
       },
       adjustFrameSize: () => {
         this.privateMethods.applyFrameSizeCSS();
@@ -264,7 +294,7 @@ if (document.querySelector("#mag-controls") == null) {
           this.frameSelectors.content().appendChild(this.data.clone);
         }
 
-        frameContentCSS = {
+        let frameContentCSS = {
           "transform":  `scale(${this.data.magnification}, ${this.data.magnification})`,
           "left": `${(this.mouseData.x - this.data.dimension() / this.data.magnification) * this.data.magnification * -1}px`,
           "top":  `${(this.mouseData.y - this.data.dimension() / this.data.magnification) * this.data.magnification * -1}px`,
@@ -323,11 +353,7 @@ if (document.querySelector("#mag-controls") == null) {
         this.controlSelectors.frameSizeText().innerHTML = `${this.data.frameSize}px`;
 
         // Assign button functions
-        this.controlSelectors.buttons.toggle().addEventListener("click", this.privateMethods.toggleFrame);
-        this.controlSelectors.buttons.magUp().addEventListener("click", this.privateMethods.magnificationUp);
-        this.controlSelectors.buttons.magDown().addEventListener("click", this.privateMethods.magnificationDown);
-        this.controlSelectors.buttons.frameUp().addEventListener("click", this.privateMethods.frameSizeUp);
-        this.controlSelectors.buttons.frameDown().addEventListener("click", this.privateMethods.frameSizeDown);
+        this.privateMethods.assignMethods();
 
         // Insert drag controls
         this.controlSelectors.selector().addEventListener("mousedown", () => {
@@ -342,13 +368,11 @@ if (document.querySelector("#mag-controls") == null) {
         this.methods.buildFrame();
 
         // Assign frame tracking and drag checking
-        document.querySelector("body").addEventListener("mousemove", () => {
-          this.privateMethods.checkDragging();
-          this.privateMethods.positionFrame();
-        });
+        document.querySelector("body").addEventListener("mousemove", this.privateMethods.mouseMove);
 
         // Start frame content positioning
         this.privateMethods.setRefresh();
+        console.log("MagTool opened.");
       },
       buildFrame: () => {
         this.controlSelectors.selector().parentNode.insertBefore(
@@ -364,12 +388,23 @@ if (document.querySelector("#mag-controls") == null) {
           this.css.frameContentCSS
         );
       },
+      destroy: () => {
+        this.data.open = false;
+        document.querySelector("body").removeEventListener("mousemove", this.privateMethods.mouseMove);
+        this.privateMethods.clearRefresh();
+        this.controlSelectors.selector().remove();
+        this.frameSelectors.frame().remove();
+        console.log("MagTool destroyed.");
+        return;
+      },
       data:     this.data,
       controls: this.controlSelectors,
       frame:    this.frameSelectors
     });
   }
 
-  let magTool = MagControls();
-  magTool.init();
+  window.magTool = MagControls();
+  window.magTool.init();
+} else {
+  window.magTool.destroy();
 }
