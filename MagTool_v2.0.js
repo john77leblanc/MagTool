@@ -1,4 +1,4 @@
-// MagTool 360
+// MagTool v2.0
 // By Johnathan LeBlanc
 
 if (document.querySelector("#mag-controls") == null) {
@@ -63,6 +63,9 @@ if (document.querySelector("#mag-controls") == null) {
               <div></div>
               <button id="mag-close" m-class="mag-button" m-hover m-event="click,magClose">&times;</button>
             </div>
+            <div m-class="note">
+              <span>Click and drag this panel to move it around.</span>
+            </div>
             <div m-class="mag-controls">
               <div m-class="mag-data">
                 <span m-class="mag-data-static">Toggle: </span>
@@ -112,6 +115,12 @@ if (document.querySelector("#mag-controls") == null) {
         "border-radius": "3px",
         "box-shadow": "0 0 5px #999999",
         "z-index": "999999",
+      },
+      "note" : {
+        "font-style": "italic",
+        "padding-bottom": "5px",
+        "border-bottom": "2px solid #999999",
+        "margin-bottom": "10px",
       },
       "mag-data": {
 
